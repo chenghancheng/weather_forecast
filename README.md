@@ -1,4 +1,4 @@
-## 天气智能网站（前后端一体，含智能预报/预警/助手）
+## 天气预报网站
 
 ### 运行环境
 - 操作系统：Windows 10/11、macOS、Linux 均可
@@ -15,7 +15,7 @@ python -m venv .venv
 pip install -r requirements.txt
 
 # 3) 启动服务（Windows 上 --reload 可能与中文路径冲突，建议先不用）
-uvicorn app.__init__:app --host 0.0.0.0 --port 8000
+& .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 打开浏览器访问 `http://127.0.0.1:8000`。

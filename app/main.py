@@ -95,7 +95,7 @@ def ip_city():
 		items = resp.get("results") or []
 		if not items:
 			return None
-		# 优先中国、城市级别（PPL* 或 PPLA/PPLC）并按距离近排序
+		# 排序策略：先中国优先 → 距离最近优先 → 再考虑行政等级
 		def _score(it: dict):
 			code = (it.get("feature_code") or "").upper()
 			rank = {"PPLC": 5, "PPLA": 4, "PPLA2": 4, "PPLA3": 3, "PPLA4": 3}
@@ -107,7 +107,8 @@ def ip_city():
 				d = (la - float(lat_)) ** 2 + (lo - float(lon_)) ** 2
 			except Exception:
 				d = 9e9
-			return (1 if it.get("country_code") == "CN" else 0, lvl, -d)
+			# 注意我们把距离放到第二维（-d 越大说明越近），避免偏向省会
+			return (1 if it.get("country_code") == "CN" else 0, -d, lvl)
 		items.sort(key=_score, reverse=True)
 		return items[0]
 
