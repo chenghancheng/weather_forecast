@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能天气建议系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .weather-input {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .weather-input h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .advice-display {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .advice-display h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .advice-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4facfe;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .advice-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .advice-card h4 {
+            color: #4facfe;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+
+        .advice-card p {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .feedback-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(238, 90, 36, 0.3);
+        }
+
+        .feedback-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .chat-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            margin-top: 20px;
+        }
+
+        .chat-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background: #4facfe;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.bot {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .chat-input button {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌤️ 智能天气建议系统</h1>
+            <p>基于AI的个性化天气建议，让你的每一天都更美好</p>
+        </div>
+
+        <div class="main-content">
+            <div class="weather-input">
+                <h3>📊 天气信息输入</h3>
+                <form id="weatherForm">
+                    <div class="form-group">
+                        <label for="temperature">温度 (°C)</label>
+                        <input type="number" id="temperature" name="temperature" value="25" min="-50" max="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weather">天气状况</label>
+                        <select id="weather" name="weather">
+                            <option value="晴天">晴天</option>
+                            <option value="多云">多云</option>
+                            <option value="阴天">阴天</option>
+                            <option value="小雨">小雨</option>
+                            <option value="中雨">中雨</option>
+                            <option value="大雨">大雨</option>
+                            <option value="小雪">小雪</option>
+                            <option value="中雪">中雪</option>
+                            <option value="大雪">大雪</option>
+                            <option value="雾">雾</option>
+                            <option value="霾">霾</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="airQuality">空气质量指数</label>
+                        <input type="number" id="airQuality" name="airQuality" value="50" min="0" max="500">
+                    </div>
+                    
+                    <button type="submit" class="btn">🚀 获取智能建议</button>
+                </form>
+            </div>
+
+            <div class="advice-display">
+                <h3>💡 智能建议</h3>
+                <div id="adviceContainer">
+                    <div class="loading">请输入天气信息并点击获取建议</div>
+                </div>
+            </div>
+
+            <div class="chat-section">
+                <h3>💬 智能对话</h3>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot">
+                        你好！我是你的天气助手，有什么可以帮助你的吗？
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="输入你的问题...">
+                    <button onclick="sendMessage()">发送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 天气建议功能
+        document.getElementById('weatherForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                temperature: parseInt(document.getElementById('temperature').value),
+                weather: document.getElementById('weather').value,
+                air_quality: parseInt(document.getElementById('airQuality').value)
+            };
+            
+            try {
+                const response = await fetch('/api/weather_advice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayAdvice(data.advice);
+                } else {
+                    alert('获取建议失败：' + data.error);
+                }
+            } catch (error) {
+                alert('请求失败：' + error.message);
+            }
+        });
+
+        function displayAdvice(advice) {
+            const container = document.getElementById('adviceContainer');
+            container.innerHTML = '';
+            
+            Object.entries(advice).forEach(([category, suggestion]) => {
+                const card = document.createElement('div');
+                card.className = 'advice-card';
+                card.innerHTML = `
+                    <h4>${category}</h4>
+                    <p>${suggestion}</p>
+                    <button class="feedback-btn" onclick="getAlternativeAdvice('${category}', this)">
+                        不满意？获取其他建议
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function getAlternativeAdvice(category, buttonElement) {
+            try {
+                // 显示加载状态
+                buttonElement.textContent = '正在获取...';
+                buttonElement.disabled = true;
+                
+                // 获取当前天气数据
+                const currentWeatherData = {
+                    temperature: parseInt(document.getElementById('temperature').value),
+                    weather: document.getElementById('weather').value,
+                    air_quality: parseInt(document.getElementById('airQuality').value)
+                };
+                
+                // 获取之前的建议内容
+                const card = buttonElement.closest('.advice-card');
+                const suggestionElement = card.querySelector('p');
+                const previousAdvice = suggestionElement.textContent;
+                
+                const response = await fetch('/api/alternative_advice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        category: category,
+                        weather_data: currentWeatherData,
+                        previous_advice: previousAdvice
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 更新建议内容
+                    suggestionElement.textContent = data.alternative;
+                    
+                    // 更新按钮文本
+                    buttonElement.textContent = '还不满意？再换一个';
+                    buttonElement.disabled = false;
+                    
+                    // 添加成功提示
+                    showToast('已为您提供新的建议！', 'success');
+                } else {
+                    alert('获取替代建议失败：' + data.error);
+                    buttonElement.textContent = '不满意？获取其他建议';
+                    buttonElement.disabled = false;
+                }
+            } catch (error) {
+                alert('请求失败：' + error.message);
+                buttonElement.textContent = '不满意？获取其他建议';
+                buttonElement.disabled = false;
+            }
+        }
+
+        // 聊天功能
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage('user', message);
+                input.value = '';
+                
+                // 发送到后端
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addMessage('bot', data.response);
+                    } else {
+                        addMessage('bot', '抱歉，我遇到了一些问题。');
+                    }
+                })
+                .catch(error => {
+                    addMessage('bot', '抱歉，网络连接出现问题。');
+                });
+            }
+        }
+
+        function addMessage(sender, text) {
+            const messages = document.getElementById('chatMessages');
+            const message = document.createElement('div');
+            message.className = `message ${sender}`;
+            message.textContent = text;
+            messages.appendChild(message);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // 回车发送消息
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 添加提示消息功能
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#17a2b8'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 5px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 2000);
+        }
+
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

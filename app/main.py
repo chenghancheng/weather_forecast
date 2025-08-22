@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
+from pydantic import BaseModel
 
 from .data_loader import load_city_weather, get_data_source, refresh_data
 from .forecasting import forecast_temperature_and_precipitation
@@ -10,6 +11,7 @@ from .alerts import generate_alerts
 from .recommend import recommend_outfit
 from .nlp import parse_intent, parse_outfit_target, parse_assistant_topic
 from .clustering import compute_weather_clusters
+from .weather_advice import weather_chat_system
 
 app = FastAPI(title="天气智能网站", version="0.2.0")
 
@@ -95,7 +97,7 @@ def ip_city():
 		items = resp.get("results") or []
 		if not items:
 			return None
-		# 优先中国、城市级别（PPL* 或 PPLA/PPLC）并按距离近排序
+		# 排序策略：先中国优先 → 距离最近优先 → 再考虑行政等级
 		def _score(it: dict):
 			code = (it.get("feature_code") or "").upper()
 			rank = {"PPLC": 5, "PPLA": 4, "PPLA2": 4, "PPLA3": 3, "PPLA4": 3}
@@ -107,7 +109,8 @@ def ip_city():
 				d = (la - float(lat_)) ** 2 + (lo - float(lon_)) ** 2
 			except Exception:
 				d = 9e9
-			return (1 if it.get("country_code") == "CN" else 0, lvl, -d)
+			# 注意我们把距离放到第二维（-d 越大说明越近），避免偏向省会
+			return (1 if it.get("country_code") == "CN" else 0, -d, lvl)
 		items.sort(key=_score, reverse=True)
 		return items[0]
 
@@ -250,3 +253,86 @@ def config_options():
 		"languages": ["zh", "en"],
 		"themes": ["light", "dark"],
 	}
+
+# 添加请求模型
+class WeatherData(BaseModel):
+    temperature: float
+    weather: str
+    air_quality: int
+
+class AlternativeRequest(BaseModel):
+    category: str
+    weather_data: WeatherData
+    previous_advice: str
+
+# 添加聊天请求模型
+class ChatRequest(BaseModel):
+    message: str
+
+# 添加天气建议API
+@app.post("/api/weather_advice")
+async def get_weather_advice(data: WeatherData):
+    try:
+        # 提取天气数据
+        weather_data = {
+            "temperature": data.temperature,
+            "weather": data.weather,
+            "air_quality": data.air_quality
+        }
+
+        # 获取建议
+        advice = weather_chat_system.get_advice(weather_data)
+
+        return {
+            "success": True,
+            "advice": advice,
+            "weather_data": weather_data
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+# 添加替代建议API
+@app.post("/api/alternative_advice")
+async def get_alternative_advice(data: AlternativeRequest):
+    try:
+        # 获取替代建议
+        alternative = weather_chat_system.get_alternative(
+            data.category,
+            data.weather_data.dict(),
+            data.previous_advice
+        )
+
+        return {
+            "success": True,
+            "alternative": alternative
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+# 改进的聊天 API
+@app.post("/api/chat")
+async def chat(data: ChatRequest):
+    """对话API"""
+    try:
+        user_input = data.message
+        # 使用 weather_chat_system 处理聊天请求
+        response = weather_chat_system.chat(user_input)
+        
+        return {
+            "success": True,
+            "response": response
+        }
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }

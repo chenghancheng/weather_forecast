@@ -34,7 +34,7 @@
 		<div class="assistant">
 			<h1 id="title-assistant" data-i18n="assistant.title">生活助手</h1>
 			<div class="input-row">
-				<input id="query" type="text" data-i18n-placeholder="assistant.placeholder" placeholder="问我：明天/后天穿什么？ 要不要带伞？" />
+				<input id="query" type="text" data-i18n-placeholder="assistant.placeholder" placeholder="告诉我：明天/后天穿什么？ 要不要带伞？" />
 				<button id="btn-send" class="btn-primary" data-i18n="assistant.send">发送</button>
 			</div>
 			<div id="result" class="advice" style="margin-top:10px"></div>
@@ -53,6 +53,443 @@
 		</div>
 	</div>
 
+	<!-- 修改lifeAssistant完整功能模块 -->
+	<div class="container">
+		<div class="life-assistant-card">
+			<div class="life-assistant-header">
+				<h1>🌤️ 智能天气建议系统</h1>
+				<p>基于AI的个性化天气建议，让你的每一天都更美好</p>
+			</div>
+
+			<div class="life-assistant-content">
+				<div class="life-assistant-left">
+					<h3>📊 天气信息输入</h3>
+					<form id="lifeWeatherForm" class="weather-input-form">
+						<div class="form-group">
+							<label for="lifeTemperature">温度 (°C)</label>
+							<input type="number" id="lifeTemperature" name="temperature" value="25" min="-50" max="50" class="form-input">
+						</div>
+						 
+						<div class="form-group">
+							<label for="lifeWeather">天气状况</label>
+							<select id="lifeWeather" name="weather" class="form-select">
+								<option value="晴天">晴天</option>
+								<option value="多云">多云</option>
+								<option value="阴天">阴天</option>
+								<option value="小雨">小雨</option>
+								<option value="中雨">中雨</option>
+								<option value="大雨">大雨</option>
+								<option value="小雪">小雪</option>
+								<option value="中雪">中雪</option>
+								<option value="大雪">大雪</option>
+								<option value="雾">雾</option>
+								<option value="霾">霾</option>
+							</select>
+						</div>
+						 
+						<div class="form-group">
+							<label for="lifeAirQuality">空气质量指数</label>
+							<input type="number" id="lifeAirQuality" name="airQuality" value="50" min="0" max="500" class="form-input">
+						</div>
+						 
+						<button type="submit" class="btn-primary" style="width: 100%;">🚀 获取智能建议</button>
+					</form>
+				</div>
+
+				<div class="life-assistant-right">
+					<h3>💡 智能建议</h3>
+					<div id="lifeAdviceContainer" class="advice-container">
+						<div class="loading">请输入天气信息并点击获取建议</div>
+					</div>
+				</div>
+
+				<div class="life-assistant-chat">
+					<h3>💬 智能对话</h3>
+					<div class="chat-messages">
+						<div class="chat-message bot">
+							你好！我是你的天气助手，有什么可以帮助你的吗？
+						</div>
+					</div>
+					<div class="chat-input-area">
+						<input type="text" id="lifeChatInput" placeholder="输入你的问题..." class="form-input chat-input">
+						<button onclick="lifeSendMessage()" class="btn-primary">发送</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<script src="/static/app.js?v=ipcity1"></script>
+
+	<script>
+		// 天气建议功能脚本
+		document.addEventListener('DOMContentLoaded', function() {
+			const getAdviceBtn = document.getElementById('get-advice-btn');
+			const adviceResult = document.getElementById('weather-advice-result');
+			const clothingAdvice = document.getElementById('clothing-advice');
+			const travelAdvice = document.getElementById('travel-advice');
+			const healthAdvice = document.getElementById('health-advice');
+			const activityAdvice = document.getElementById('activity-advice');
+			const alternativeBtns = document.querySelectorAll('.alternative-btn');
+
+			getAdviceBtn.addEventListener('click', function() {
+				const temperature = parseFloat(document.getElementById('temperature').value);
+				const weather = document.getElementById('weather').value;
+				const airQuality = parseInt(document.getElementById('air-quality').value);
+
+				// 发送请求到后端获取天气建议
+				fetch('/api/weather_advice', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						temperature: temperature,
+						weather: weather,
+						air_quality: airQuality
+					})
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						clothingAdvice.textContent = data.advice['穿衣指数'];
+						travelAdvice.textContent = data.advice['出行建议'];
+						healthAdvice.textContent = data.advice['健康提醒'];
+						activityAdvice.textContent = data.advice['活动规划'];
+						adviceResult.style.display = 'block';
+					} else {
+						alert('获取建议失败: ' + data.error);
+					}
+				})
+				.catch(error => {
+					console.error('Error:', error);
+					alert('获取建议失败');
+				});
+			});
+
+			// 替代建议按钮事件
+			alternativeBtns.forEach(btn => {
+				btn.addEventListener('click', function() {
+					const category = this.getAttribute('data-category');
+					const temperature = parseFloat(document.getElementById('temperature').value);
+					const weather = document.getElementById('weather').value;
+					const airQuality = parseInt(document.getElementById('air-quality').value);
+
+					// 获取当前建议
+					let currentAdvice;
+					if (category === 'clothing') currentAdvice = clothingAdvice.textContent;
+					else if (category === 'travel') currentAdvice = travelAdvice.textContent;
+					else if (category === 'health') currentAdvice = healthAdvice.textContent;
+					else if (category === 'activity') currentAdvice = activityAdvice.textContent;
+
+					// 发送请求获取替代建议
+					fetch('/api/alternative_advice', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							category: category,
+							weather_data: {
+								temperature: temperature,
+								weather: weather,
+								air_quality: airQuality
+							},
+							previous_advice: currentAdvice
+						})
+					})
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							if (category === 'clothing') clothingAdvice.textContent = data.alternative;
+							else if (category === 'travel') travelAdvice.textContent = data.alternative;
+							else if (category === 'health') healthAdvice.textContent = data.alternative;
+							else if (category === 'activity') activityAdvice.textContent = data.alternative;
+						} else {
+							alert('获取替代建议失败: ' + data.error);
+						}
+					})
+					.catch(error => {
+						console.error('Error:', error);
+						alert('获取替代建议失败');
+					});
+				});
+			});
+		});
+
+		// 添加lifeAssistant完整功能的JavaScript
+		// 天气建议功能
+		document.getElementById('lifeWeatherForm').addEventListener('submit', async function(e) {
+			e.preventDefault();
+			console.log('表单提交'); // 添加调试日志
+			
+			const formData = {
+				temperature: parseInt(document.getElementById('lifeTemperature').value),
+				weather: document.getElementById('lifeWeather').value,
+				air_quality: parseInt(document.getElementById('lifeAirQuality').value)
+			};
+			console.log('表单数据:', formData); // 添加调试日志
+			
+			try {
+				const response = await fetch('/api/weather_advice', { 
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(formData)
+				});
+				console.log('响应状态:', response.status); // 添加调试日志
+				
+				const data = await response.json();
+				console.log('响应数据:', data); // 添加调试日志
+				
+				if (data.success) {
+					// 确保数据格式正确
+					console.log('建议数据:', data.advice);
+					lifeDisplayAdvice(data.advice);
+				} else {
+					alert('获取建议失败：' + data.error);
+				}
+			} catch (error) {
+				console.error('请求错误:', error); // 添加调试日志
+				alert('请求失败：' + error.message);
+			}
+		});
+
+		function lifeDisplayAdvice(advice) {
+			const container = document.getElementById('lifeAdviceContainer');
+			container.innerHTML = '';
+			
+			// 检查advice是否是有效的对象
+			if (!advice || typeof advice !== 'object') {
+				console.error('无效的建议数据:', advice);
+				container.innerHTML = '<div class="error">无法获取有效建议数据</div>';
+				return;
+			}
+			
+			// 重新定义分类标签，让显示更友好
+			const categoryLabels = {
+				'clothing': '穿衣指数',
+				'travel': '出行建议',
+				'health': '健康提醒',
+				'activity': '活动规划',
+				'穿衣指数': '穿衣指数',
+				'出行建议': '出行建议',
+				'健康提醒': '健康提醒',
+				'活动规划': '活动规划'
+			};
+			
+			// 检查是否是空对象
+			if (Object.keys(advice).length === 0) {
+				container.innerHTML = '<div class="no-advice">暂无建议，请稍后再试</div>';
+				return;
+			}
+			
+			// 遍历并显示建议
+			Object.entries(advice).forEach(([category, suggestion]) => {
+				const card = document.createElement('div');
+				card.className = 'advice-card';
+				card.innerHTML = `
+					<h4>${categoryLabels[category] || category}</h4>
+					<p>${suggestion}</p>
+
+					<button class="feedback-btn" onclick="lifeGetAlternativeAdvice('${category}', this)">
+                        不满意？获取其他建议
+                    </button>
+				`;
+				container.appendChild(card);
+			});
+			
+			// 添加替代建议按钮事件监听
+			container.querySelectorAll('.alternative-btn').forEach(btn => {
+				btn.addEventListener('click', function() {
+					const category = this.getAttribute('data-category');
+					lifeGetAlternativeAdvice(category, this);
+				});
+			});
+		}
+
+		async function lifeGetAlternativeAdvice(category, buttonElement) {
+			try {
+				// 显示加载状态
+				buttonElement.textContent = '正在获取...';
+				buttonElement.disabled = true;
+				
+				// 获取当前天气数据
+				const currentWeatherData = {
+					temperature: parseInt(document.getElementById('lifeTemperature').value),
+					weather: document.getElementById('lifeWeather').value,
+					air_quality: parseInt(document.getElementById('lifeAirQuality').value)
+				};
+				
+				// 获取之前的建议内容
+				const card = buttonElement.closest('div');
+				const suggestionElement = card.querySelector('p');
+				const previousAdvice = suggestionElement.textContent;
+				
+				const response = await fetch('/api/alternative_advice', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ 
+						category: category,
+						weather_data: currentWeatherData,
+						previous_advice: previousAdvice
+					})
+				});
+				
+				const data = await response.json();
+				
+				if (data.success) {
+					// 更新建议内容
+					suggestionElement.textContent = data.alternative;
+					
+					// 更新按钮文本
+					buttonElement.textContent = '还不满意？再换一个';
+					buttonElement.disabled = false;
+					
+					// 添加成功提示
+					lifeShowToast('已为您提供新的建议！', 'success');
+				} else {
+					alert('获取替代建议失败：' + data.error);
+					buttonElement.textContent = '不满意？获取其他建议';
+					buttonElement.disabled = false;
+				}
+			} catch (error) {
+				alert('请求失败：' + error.message);
+				buttonElement.textContent = '不满意？获取其他建议';
+				buttonElement.disabled = false;
+			}
+		}
+
+		// 聊天功能
+		function lifeSendMessage() {
+			const input = document.getElementById('lifeChatInput');
+			const message = input.value.trim();
+			
+			if (message) {
+				lifeAddMessage('user', message);
+				input.value = '';
+				
+				// 发送到后端
+				fetch('/api/chat', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ message: message })
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						lifeAddMessage('bot', data.response);
+					} else {
+						lifeAddMessage('bot', '抱歉，我遇到了一些问题。');
+					}
+				})
+				.catch(error => {
+					lifeAddMessage('bot', '抱歉，网络连接出现问题。');
+				});
+			}
+		}
+
+		function lifeAddMessage(sender, text) {
+			// 使用更直接的选择器来查找消息容器
+			const messagesContainer = document.querySelector('.life-assistant-chat .chat-messages');
+			const message = document.createElement('div');
+			message.className = `chat-message ${sender}`;
+			message.textContent = text;
+			messagesContainer.appendChild(message);
+			messagesContainer.scrollTop = messagesContainer.scrollHeight;
+		}
+
+		// 回车发送消息
+		document.getElementById('lifeChatInput').addEventListener('keypress', function(e) {
+			if (e.key === 'Enter') {
+				lifeSendMessage();
+			}
+		});
+
+		// 添加提示消息功能
+		function lifeShowToast(message, type = 'info') {
+			const toast = document.createElement('div');
+			toast.className = `toast toast-${type}`;
+			toast.textContent = message;
+			// 修复CSS变量使用方式
+			toast.style.position = 'fixed';
+			toast.style.top = '20px';
+			toast.style.right = '20px';
+			toast.style.backgroundColor = type === 'success' ? 'var(--primary)' : 'var(--primary-600)';
+			toast.style.color = 'white';
+			toast.style.padding = '12px 20px';
+			toast.style.borderRadius = '5px';
+			toast.style.zIndex = '1000';
+			toast.style.animation = 'slideIn 0.3s ease';
+			
+			document.body.appendChild(toast);
+			
+			setTimeout(() => {
+				toast.style.animation = 'slideOut 0.3s ease';
+				setTimeout(() => {
+					document.body.removeChild(toast);
+				}, 300);
+			}, 2000);
+		}
+
+		// 添加CSS动画
+		const style = document.createElement('style');
+		style.textContent = `
+			@keyframes slideIn {
+				from { transform: translateX(100%); opacity: 0; }
+				to { transform: translateX(0); opacity: 1; }
+			}
+			@keyframes slideOut {
+				from { transform: translateX(0); opacity: 1; }
+				to { transform: translateX(100%); opacity: 0; }
+			}
+			.chat-message {
+				margin-bottom: 15px; 
+				padding: 10px 15px; 
+				border-radius: 10px; 
+				max-width: 80%;
+			}
+			.chat-message.user {
+				background-color: var(--primary);
+				color: white;
+				margin-left: auto;
+			}
+			.chat-message.bot {
+				background-color: var(--chip-bg);
+				color: var(--fg);
+			}
+			
+			/* 优化深色模式下的颜色显示 */
+			[data-theme="dark"] .chat-message.bot {
+				background-color: var(--card-bg);
+				border: 1px solid var(--card-border);
+			}
+			
+			[data-theme="dark"] .advice-card {
+				background-color: var(--card-bg);
+				border: 1px solid var(--card-border);
+				padding: 15px;
+				border-radius: 10px;
+				margin-bottom: 15px;
+			}
+			
+			[data-theme="dark"] .toast {
+				background-color: rgba(59, 130, 246, 0.9) !important;
+			}
+			
+			/* 确保lifeAssistant模块与原页面保持一致宽度 */
+			.life-assistant-full {
+				max-width: 1080px;
+				margin: 0 auto;
+				padding: 0 18px;
+			}
+		`;
+		document.head.appendChild(style);
+	</script>
 </body>
 </html>
