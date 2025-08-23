@@ -53,6 +53,21 @@
 		</div>
 	</div>
 
-	<script src="/static/app.js?v=ipcity1"></script>
+	<div id="loader" class="loader-overlay" style="display:none"><div class="loader" aria-label="loading"></div></div>
+	
+	<!-- Data Source Modal -->
+	<div id="dataSourceModal" class="data-source-modal">
+		<div class="data-source-content">
+			<div class="data-source-header">
+				<h3 class="data-source-title">数据来源详情</h3>
+				<button class="data-source-close" onclick="closeDataSourceModal()">&times;</button>
+			</div>
+			<div id="dataSourceContent">
+				<!-- Content will be populated by JavaScript -->
+			</div>
+		</div>
+	</div>
+	
+	<script src="/static/app.js?v=weather-ui3"></script>
 </body>
 </html>

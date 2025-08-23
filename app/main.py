@@ -58,15 +58,36 @@ def ip_city():
 		except Exception:
 			return None
 
-	# 1) IP -> 粗定位
-	info = _try(
-		"https://ipapi.co/json/",
-		lambda j: {
-			"city": j.get("city") or j.get("region_city"),
-			"lat": j.get("latitude"),
-			"lon": j.get("longitude"),
-		},
-	)
+	# ip.cn 地址解析：提取省与市（可能不含经纬度）
+	def _pick_ipcn(j):
+		import re
+		addr = str(j.get("address") or j.get("location") or j.get("addr") or "")
+		prov = None
+		_mprov = re.search(r"([\u4e00-\u9fa5]{2,7})(?:省|市|自治区|特别行政区)", addr)
+		if _mprov:
+			prov = _mprov.group(1)
+		cand = re.findall(r"([\u4e00-\u9fa5]{2,8}(?:市|自治州|地区|盟|州|县|区))", addr)
+		if cand:
+			for c in cand:
+				if c.endswith("市"):
+					return {"city": c, "province": prov}
+			return {"city": cand[-1], "province": prov}
+		for k in ("city", "city_name"):
+			if j.get(k):
+				return {"city": j.get(k), "province": prov}
+		return None
+
+	# 1) IP -> 粗定位（优先 ip.cn，其次 ipapi/ipwho/ip-api）
+	info = _try("https://ip.cn/api/index?type=0", _pick_ipcn)
+	if not info:
+		info = _try(
+			"https://ipapi.co/json/",
+			lambda j: {
+				"city": j.get("city") or j.get("region_city"),
+				"lat": j.get("latitude"),
+				"lon": j.get("longitude"),
+			},
+		)
 	if not info:
 		info = _try(
 			"https://ipwho.is/",
@@ -77,6 +98,7 @@ def ip_city():
 			"http://ip-api.com/json/?fields=status,city,lat,lon&lang=zh-CN",
 			lambda j: ({"city": j.get("city"), "lat": j.get("lat"), "lon": j.get("lon")} if j and j.get("status") == "success" else None),
 		)
+	# （ip.cn 已作为首选数据源，不再在此兜底）
 
 	city = (info or {}).get("city")
 	lat = (info or {}).get("lat")
@@ -212,6 +234,12 @@ def outfit_recommend(city: str = Query("北京"), days: int = Query(1, ge=1, le=
 @app.get("/api/nlp")
 def nlp_endpoint(q: str = "", city: str = Query("北京")):
 	# 生活助手：umbrella/sunscreen/outfit
+	# 输入清洗与长度限制（避免极端长文本带来的性能/安全问题）
+	if not isinstance(q, str):
+		q = ""
+	q = (q or "").replace("\u200b", "").replace("\u200e", "").strip()
+	if len(q) > 200:
+		q = q[:200]
 	target_date = parse_outfit_target(q)
 	topic = parse_assistant_topic(q)
 	if target_date is not None:

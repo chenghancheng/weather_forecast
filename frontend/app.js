@@ -107,22 +107,100 @@ function renderAdvice(obj){
 
 function card(item){
 	const lp=t('label.precip'), lh=t('label.humidity'), lw=t('label.wind');
+	const isRainy = Number(item.precipitation_mm||0) >= 1.0;
+	const cls = isRainy ? 'weather-rainy' : 'weather-sunny';
+	const icon = isRainy
+		? '<svg class="weather-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 15c-2.2 0-4-1.8-4-4 0-2 1.5-3.7 3.4-3.9C7 4.6 8.9 3 11.1 3c2.5 0 4.6 1.9 4.9 4.3 2.1.3 3.8 2.1 3.8 4.2 0 2.4-2 4.4-4.4 4.4H7z" fill="currentColor" opacity=".9"/><g stroke="currentColor" stroke-linecap="round"><path d="M9 18v3"/><path d="M13 18v3"/><path d="M17 18v3"/></g></svg>'
+		: '<svg class="weather-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" fill="currentColor" opacity=".9"/><g stroke="currentColor" stroke-linecap="round"><path d="M12 1v3"/><path d="M12 20v3"/><path d="M1 12h3"/><path d="M20 12h3"/><path d="M4.2 4.2l2.1 2.1"/><path d="M17.7 17.7l2.1 2.1"/><path d="M19.8 4.2l-2.1 2.1"/><path d="M6.3 17.7l-2.1 2.1"/></g></svg>';
 	return `
-		<div class="card">
-			<div class="date">${item.date}</div>
+		<div class="card ${cls}">
+			<div class="date">${item.date} ${icon}</div>
 			<div class="temp">${item.temperature_c.toFixed(1)}°C <span style="color:var(--muted);font-size:12px">(↑${item.tmax?.toFixed?.(1)} ↓${item.tmin?.toFixed?.(1)})</span></div>
 			<div class="meta">${lp}：${item.precipitation_mm.toFixed(1)} mm<br/>${lh}：${item.humidity.toFixed(0)}%　${lw}：${item.wind_speed_ms.toFixed(1)} m/s</div>
+			<button class="data-source-btn" onclick="showDataSource('${item.date}', ${JSON.stringify(item.calculation_details || {})})" title="查看数据来源">i</button>
 		</div>
 	`;
 }
 
-function qs(id){ return document.getElementById(id); }
-function currentCity(){ return qs('city')?.value || '北京'; }
+// 数据来源模态框相关函数
+function showDataSource(date, details) {
+	const modal = document.getElementById('dataSourceModal');
+	const content = document.getElementById('dataSourceContent');
+	
+	let html = `<div class="data-source-item">
+		<div class="data-source-item-title">${date} 预测数据来源</div>`;
+	
+	if (details.data_source === 'external_fusion') {
+		html += `
+		<div class="data-source-grid">
+			<div class="data-source-value">
+				<div class="data-source-value-label">官方预测温度</div>
+				<div class="data-source-value-number">${details.external_temp?.toFixed(1) || 'N/A'}°C</div>
+			</div>
+			<div class="data-source-value">
+				<div class="data-source-value-label">本地模型温度</div>
+				<div class="data-source-value-number">${details.local_temp?.toFixed(1) || 'N/A'}°C</div>
+			</div>
+		</div>
+		<div class="data-source-grid">
+			<div class="data-source-value">
+				<div class="data-source-value-label">官方预测降水</div>
+				<div class="data-source-value-number">${details.external_prec?.toFixed(1) || 'N/A'} mm</div>
+			</div>
+			<div class="data-source-value">
+				<div class="data-source-value-label">本地模型降水</div>
+				<div class="data-source-value-number">${details.local_prec?.toFixed(1) || 'N/A'} mm</div>
+			</div>
+		</div>
+		<div class="data-source-formula">
+			最终温度 = 官方预测 × ${details.weights.external} + 本地模型 × ${details.weights.local}<br>
+			最终降水 = 官方预测 × ${details.weights.external} + 本地模型 × ${details.weights.local}
+		</div>`;
+	} else {
+		html += `
+		<div class="data-source-grid">
+			<div class="data-source-value">
+				<div class="data-source-value-label">本地模型温度</div>
+				<div class="data-source-value-number">${details.local_temp?.toFixed(1) || 'N/A'}°C</div>
+			</div>
+			<div class="data-source-value">
+				<div class="data-source-value-label">本地模型降水</div>
+				<div class="data-source-value-number">${details.local_prec?.toFixed(1) || 'N/A'} mm</div>
+			</div>
+		</div>
+		<div class="data-source-formula">
+			仅使用本地模型预测（ARIMA + LSTM融合）
+		</div>`;
+	}
+	
+	html += '</div>';
+	content.innerHTML = html;
+	modal.classList.add('show');
+}
+
+function closeDataSourceModal() {
+	const modal = document.getElementById('dataSourceModal');
+	modal.classList.remove('show');
+}
+
+// 点击模态框外部关闭
+document.addEventListener('DOMContentLoaded', function() {
+	const modal = document.getElementById('dataSourceModal');
+	modal.addEventListener('click', function(e) {
+		if (e.target === modal) {
+			closeDataSourceModal();
+		}
+	});
+});
+
+// 存储最新的预报数据，用于历史图表
+let latestForecastData = [];
 
 async function renderForecast(){
 	try{
 		const data = await getJSON(`/api/forecast?city=${encodeURIComponent(currentCity())}&days=7`);
 		const list = data.forecast || [];
+		latestForecastData = list; // 保存预报数据
 		cardsEl.innerHTML = list.map(card).join('');
 	}catch(e){
 		cardsEl.innerHTML = `<div class="card">${String(e)}</div>`;
@@ -132,7 +210,30 @@ async function renderForecast(){
 async function renderHistory(){
 	try{
 		const data = await getJSON(`/api/history?city=${encodeURIComponent(currentCity())}&days=14`);
-		const list = data.history || [];
+		let list = data.history || [];
+		
+		// 如果有预报数据，将前7天替换为预报数据以确保一致性
+		if (latestForecastData.length > 0) {
+			const forecastDates = new Set(latestForecastData.map(f => f.date));
+			const updatedList = list.map(item => {
+				const dateStr = typeof item.date === 'string' ? item.date : item.date.toISOString().split('T')[0];
+				if (forecastDates.has(dateStr)) {
+					const forecast = latestForecastData.find(f => f.date === dateStr);
+					if (forecast) {
+						return {
+							...item,
+							temperature_c: forecast.temperature_c,
+							precipitation_mm: forecast.precipitation_mm,
+							humidity: forecast.humidity,
+							wind_speed_ms: forecast.wind_speed_ms
+						};
+					}
+				}
+				return item;
+			});
+			list = updatedList;
+		}
+		
 		const labels = list.map(x=>x.date);
 		const temps = list.map(x=>x.temperature_c);
 		const precs = list.map(x=>x.precipitation_mm);
@@ -198,7 +299,7 @@ if(themeSel){
 
 // Language switch
 const langSel=document.getElementById('lang');
-if(langSel){ langSel.addEventListener('change', ()=> applyI18n()); }
+if(langSel){ langSel.addEventListener('change', ()=> { applyI18n(); refreshData(); }); }
 
 // City change triggers refresh
 const citySel = document.getElementById('city');
@@ -283,14 +384,21 @@ if(btnSend){
 
 async function refreshData(){
 	applyI18n();
-	await renderForecast();
-	await renderHistory();
-	await renderExtremes();
+	const overlay = document.getElementById('loader');
+	if(overlay) overlay.style.display = 'flex';
+	try{
+		await renderForecast();
+		await renderHistory();
+		await renderExtremes();
+	} finally {
+		if(overlay) overlay.style.display = 'none';
+	}
 }
 
 (async function init(){
 	applyI18n();
-	// 默认城市留北京；用户可点击 IP 按钮手动选择
+	// 先尝试服务端基于 IP 的定位，再回落到本地默认/历史
+	try{ await initGeolocation(); }catch(e){}
 	restoreCity();
 	await refreshData();
 })();
@@ -337,3 +445,6 @@ if(btnIp){
 		}finally{ btnIp.disabled = false; }
 	});
 }
+
+function qs(id){ return document.getElementById(id); }
+function currentCity(){ return qs('city')?.value || '北京'; }

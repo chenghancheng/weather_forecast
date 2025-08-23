@@ -1,0 +1,87 @@
+项目功能与技术实现说明
+
+一、整体架构
+- 后端：FastAPI (ASGI)，模块化拆分为数据加载(data_loader)、预测(forecasting)、预警(alerts)、推荐(recommend)、NLP(nlp)、聚类(clustering，当前停用) 等；提供 REST API，并通过 CORS 允许前端访问；使用 `StaticFiles` 暴露 `frontend/` 静态资源。
+- 前端：原生 HTML/CSS/JS + Chart.js，可选择城市、主题（浅色/深色/系统）、语言（中/英），并展示历史与预测数据、极端天气摘要、生活助手问答。
+- 数据：优先调用 Open‑Meteo（实时 + 归档），其次本地 CSV（结构自适配），最后生成合成季节性数据兜底。
+
+二、数据加载（app/data_loader.py）
+1) 关键技术
+- requests：访问 Open‑Meteo 地理编码、forecast、archive 接口；
+- pandas/numpy：整理数据表、时间列、统计与缺失值处理；
+- lru_cache：对坐标与数据加载进行缓存，减少重复请求；
+- 多数据源策略：recent→archive→csv→synthetic 并记录来源 LAST_SOURCE。
+- 轻量重试：对外部 HTTP GET（地理编码/forecast/archive）增加重试与指数退避（2~3 次）。
+
+2) 核心流程
+- get_city_coords：内置热门城市坐标，不在表内则调用 Open‑Meteo 地理编码按行政级别/人口排序择优；
+- _fetch_open_meteo_recent：使用 forecast 接口的 past_days 拉取近 90 天数据（包含 tmin/tmax/降水/风/湿度），并统一换算为日均温/风速；
+- _fetch_open_meteo_daily：使用 ERA5 归档接口按起止日期拉取；
+- CSV 兼容：自动识别列名 date/temp/precip/humidity/wind 的大小写/别名并重命名补列；
+- 合成季节性：若前两者失败则按月份基线 + 周期噪声生成 365 天数据；
+- load_city_weather：按优先级返回 DataFrame，并在 refresh_data 中清空缓存后重载。
+
+三、天气预报（app/forecasting.py）
+1) 模型与训练细节（默认启用 ARIMA + LSTM 融合，已在 requirements 中加入 tensorflow-cpu）
+- 序列预处理：
+  - 将历史序列补齐为日频（asfreq('D')），采用基于时间的线性插值 + 前后填充，消除节日/缺测造成的空洞；
+  - 气温与降水分开建模，后续融合。
+- ARIMA：
+  - 候选阶数集合：[(2,1,2),(5,1,0),(1,1,1),(2,1,0),(0,1,2)]，逐个拟合并按 AIC 选最优；
+  - 预测后使用“最近 14 天残差均值”做偏差校正，降低系统性偏移；
+- LSTM（默认启用）：
+  - 归一化：z-score 标准化（mean/std，std<1e-6 时置 1.0，避免除零）；
+  - 窗口化：lookback=14，构造 (X:14步, y:下一步) 监督学习样本；
+  - 结构：Input(14,1) → LSTM(32) → Dense(16,relu) → Dense(1)，优化器 Adam，loss=MSE；
+  - 训练：epochs=10，batch=16，EarlyStopping(patience=2, restore_best_weights=True)；
+  - 递推：用最后 14 步为滑动窗口，逐步滚动预测 steps 天并反标准化；
+- 融合：温度预测按 (ARIMA + LSTM)/2 平均；降水仅使用 ARIMA 结果；
+- 外部官方预测：调用 Open‑Meteo 未来日度，得到 tmin/tmax/降水/风/湿度并换算风速到 m/s；
+- tmin/tmax 还原：若官方预测可用，以 85% 权重融合；否则基于近 30 天 `tmax-日均` 与 `日均-tmin` 的均值作为 spread，令 tmax=tavg+spread_max，tmin=tavg-spread_min。
+
+2) 输出
+- 列表元素字段：date、temperature_c（日均）、tmax、tmin、precipitation_mm、humidity、wind_speed_ms。
+- 融合权重：外部 85% + 本地模型 15%。
+
+四、预警（app/alerts.py）
+1) 训练与推理
+- 清洗：确保存在 temperature_c/precipitation_mm/humidity/wind_speed_ms 四列；对非数值进行 `to_numeric(..., errors='coerce')` 并以列中位数/默认值填充；
+- 基线气温：将日期转为 ordinal（天数），用线性回归拟合 baseline_temp=f(date_ordinal)；
+- 风险分类：合成历史标签（低温<0℃ / 高温>35℃ / 降水>10mm / 风>8m/s → 高风险=1，否则0），以四维特征训练 RandomForestClassifier(n_estimators=120, max_depth=6)；
+- 推理：对每个预测日构造 [temperature_c, precipitation_mm, wind_speed_ms, humidity]，给出“高风险/低风险”，并依据显式阈值补充原因（极端低温/高温/强降水/大风/综合风险）。
+
+五、穿衣建议（app/recommend.py）
+1) 规则与原型检索
+- 规则：
+  - T<5℃→“羽绒服/厚外套/保暖内衣”；5≤T<12℃→“外套/毛衣/长裤”；12≤T≤28℃→“衬衫/薄外套/长裤”；T>28℃→“短袖/薄裙/防晒”；
+  - 降水>5mm→补充“携带雨伞/雨衣”；风速>6m/s→补充“防风外套/帽子”；
+- KNN 原型：在四维向量 [温度,降水,风速,湿度] 空间，使用 NearestNeighbors(n_neighbors=2, metric='euclidean')，从预设原型集中检索 2 个最邻近标签，和规则建议去重后合并。
+
+六、NLP（app/nlp.py 与 /api/nlp）
+- 关键词 + 正则：以固定词典粗分意图（forecast/alerts/recommend/clusters/greeting）；
+- 日期解析：支持“今天/明天/后天”和 yyyy-mm-dd、m.d 等表达；主题识别 umbrella/sunscreen/outfit；
+- 接口防护：对 q 做长度限制与去除不可见字符；若无法识别日期则返回 unknown 提示。
+
+七、IP 推断城市（/api/ip-city）
+- 多源查询：ip.cn（中文地址解析）→ ipapi → ipwho.is → ip-api；
+- 反向地理编码：Open‑Meteo reverse，评分规则“中国优先→距离近→行政等级”，失败时回退到 name search；
+- 输出：原始 city、lat/lon、normalized 标准化中文名。
+
+八、前端（frontend/*）
+- Chart.js 双轴（降水柱状 + 温度折线）；
+- 主题（system/light/dark）与语言（zh/en）切换并持久化；
+- 城市选择：下拉 + 搜索（Open‑Meteo geocoding 联想），LocalStorage 持久化；
+- 组件：未来 7 天卡片、极端天气卡片、生活助手答复框。
+
+九、这次代码层面改进
+- 外部 HTTP 调用统一增加 2~3 次重试与指数退避（data_loader、forecasting、ip_city 辅助函数）。
+- `/api/nlp` 入参 q 增加长度限制与清洗，避免异常输入造成性能/安全问题。
+
+十、可进一步改进方向
+- 预测：增加滚动回测与指标（MAE/RMSE），按城市自适应权重；降水采用两段式（是否降水分类 + 强度回归）。
+- 预警：引入多级（高/中/低）并暴露特征重要性；
+- 体验：加载态/失败态、Vite 构建与代码分割、CDN SRI、可选 PWA；
+- 工程化：pytest 覆盖、CI、Prometheus/OpenTelemetry、Docker 多阶段构建。
+
+附：主要外部依赖
+- FastAPI, Uvicorn, pandas, numpy, requests, statsmodels, scikit‑learn, tensorflow(默认启用), Chart.js。

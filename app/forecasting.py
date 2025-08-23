@@ -19,6 +19,7 @@ except Exception:
 from .data_loader import get_city_coords
 
 import requests
+import time
 
 warnings.filterwarnings(
 	"ignore",
@@ -121,9 +122,7 @@ def _fetch_open_meteo_forecast(days: int, city: str) -> Optional[pd.DataFrame]:
 			"&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,relative_humidity_2m_mean"
 			"&forecast_days=" + str(min(max(days, 1), 14)) + "&timezone=Asia%2FShanghai"
 		)
-		r = requests.get(url, timeout=20)
-		r.raise_for_status()
-		js = r.json()
+		js = _http_get_json(url, timeout=20, retries=2)
 		d = js.get("daily", {})
 		times = d.get("time")
 		if not times:
@@ -147,6 +146,20 @@ def _fetch_open_meteo_forecast(days: int, city: str) -> Optional[pd.DataFrame]:
 		return df
 	except Exception:
 		return None
+
+
+# --- HTTP 重试辅助（与 data_loader 一致的轻量实现） ---
+def _http_get_json(url: str, timeout: float = 15.0, retries: int = 2, backoff_base: float = 0.5) -> dict:
+	for attempt in range(retries + 1):
+		try:
+			r = requests.get(url, timeout=timeout)
+			r.raise_for_status()
+			return r.json() or {}
+		except Exception:
+			if attempt >= retries:
+				break
+			time.sleep(backoff_base * (2 ** attempt))
+	return {}
 
 
 def _estimate_spread_from_history(df: pd.DataFrame) -> Tuple[float, float]:
@@ -212,6 +225,16 @@ def forecast_temperature_and_precipitation(df: pd.DataFrame, days: int = 7, city
 			out_temp = base_temp
 			out_hum = ex_hum
 			out_wind = ex_wind
+			
+			# 添加详细计算过程
+			calculation_details = {
+				"external_temp": ex_temp,
+				"external_prec": ex_prec,
+				"local_temp": float(temp_model[i]),
+				"local_prec": float(prec_arima[i]),
+				"weights": {"external": 0.85, "local": 0.15},
+				"data_source": "external_fusion"
+			}
 		else:
 			out_date = dates[i]
 			out_temp = float(temp_model[i])
@@ -220,6 +243,16 @@ def forecast_temperature_and_precipitation(df: pd.DataFrame, days: int = 7, city
 			out_wind = mean_wind
 			out_tmax = out_temp + delta_max
 			out_tmin = out_temp - delta_min
+			
+			# 添加详细计算过程
+			calculation_details = {
+				"external_temp": None,
+				"external_prec": None,
+				"local_temp": float(temp_model[i]),
+				"local_prec": float(prec_arima[i]),
+				"weights": {"external": 0.0, "local": 1.0},
+				"data_source": "local_only"
+			}
 
 		forecast_list.append({
 			"date": out_date,
@@ -229,5 +262,6 @@ def forecast_temperature_and_precipitation(df: pd.DataFrame, days: int = 7, city
 			"precipitation_mm": out_prec,
 			"humidity": out_hum,
 			"wind_speed_ms": out_wind,
+			"calculation_details": calculation_details
 		})
 	return forecast_list

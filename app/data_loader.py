@@ -7,6 +7,7 @@ from typing import Optional, Tuple
 import numpy as np
 import pandas as pd
 import requests
+import time
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = ROOT / "weather_prediction_dataset.csv"
@@ -54,9 +55,7 @@ def _geocode_city(name: str) -> Optional[Tuple[float, float]]:
 			+ requests.utils.quote(query)
 			+ "&count=10&language=zh"
 		)
-		r = requests.get(url, timeout=15)
-		r.raise_for_status()
-		items = r.json().get("results") or []
+		items = _http_get_json(url, timeout=15, retries=2).get("results") or []
 		if not items:
 			return None
 
@@ -106,9 +105,7 @@ def _fetch_open_meteo_recent(lat: float, lon: float, past_days: int = 90) -> Opt
 		"&timezone=Asia%2FShanghai"
 	)
 	try:
-		r = requests.get(url, timeout=30)
-		r.raise_for_status()
-		d = r.json().get("daily", {})
+		d = _http_get_json(url, timeout=30, retries=2).get("daily", {})
 		times = d.get("time", [])
 		if not times:
 			return None
@@ -142,9 +139,7 @@ def _fetch_open_meteo_daily(lat: float, lon: float, start_date: str, end_date: s
 		"&timezone=Asia%2FShanghai"
 	)
 	try:
-		r = requests.get(url, timeout=30)
-		r.raise_for_status()
-		daily = r.json().get("daily", {})
+		daily = _http_get_json(url, timeout=30, retries=2).get("daily", {})
 		dates = daily.get("time", [])
 		if not dates:
 			return None
@@ -275,3 +270,22 @@ def refresh_data(city: str = "北京") -> str:
 @lru_cache(maxsize=1)
 def load_beijing_weather() -> pd.DataFrame:
 	return load_city_weather("北京")
+
+
+# --- HTTP 重试辅助 ---
+def _http_get_json(url: str, timeout: float = 15.0, retries: int = 2, backoff_base: float = 0.5) -> dict:
+	"""GET 并返回 JSON，带指数退避的轻量重试。失败返回空 dict。
+
+	- retries 表示额外重试次数（总尝试=1+retries）
+	- backoff 形如 0.5, 1.0, 2.0 ... 秒
+	"""
+	for attempt in range(retries + 1):
+		try:
+			r = requests.get(url, timeout=timeout)
+			r.raise_for_status()
+			return r.json() or {}
+		except Exception:
+			if attempt >= retries:
+				break
+			time.sleep(backoff_base * (2 ** attempt))
+	return {}
