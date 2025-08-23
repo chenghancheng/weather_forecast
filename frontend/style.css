@@ -1,49 +1,851 @@
-:root{--bg:#ffffff;--fg:#111827;--muted:#6b7280;--primary:#2563eb;--primary-600:#1d4ed8;--card-bg:#ffffff;--card-border:#e5e7eb;--chip-bg:#f1f5f9;--chip-border:#e2e8f0;--shadow:0 6px 18px rgba(0,0,0,.06);--sun-start:rgba(253,224,71,.35);--sun-end:rgba(253,224,71,0);--rain-accent:rgba(59,130,246,.18);--rain-accent-2:rgba(59,130,246,.06);--loader-bg:rgba(0,0,0,.25)}
+/* 最高优先级的按钮样式 - 确保在所有情况下都正确显示 */
+#btn-send,
+#btn-ip-city,
+.btn-primary {
+	background: #2563eb !important;
+	color: #ffffff !important;
+	border: none !important;
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	font-weight: 600 !important;
+	cursor: pointer !important;
+	transition: all .2s ease !important;
+}
+
+#btn-send:hover,
+#btn-ip-city:hover,
+.btn-primary:hover {
+	background: #1d4ed8 !important;
+	color: #ffffff !important;
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+	transform: translateY(-1px) !important;
+}
+
+#btn-send:active,
+#btn-ip-city:active,
+.btn-primary:active {
+	background: #1e40af !important;
+	color: #ffffff !important;
+	transform: translateY(0) !important;
+}
+
+/* 顶部导航栏按钮特殊尺寸 */
+.topbar #btn-ip-city {
+	padding: 8px 12px !important;
+	font-size: 14px !important;
+	border-radius: 10px !important;
+}
+
+/* 生活助手发送按钮尺寸 */
+#btn-send {
+	padding: 14px 20px !important;
+	font-size: 15px !important;
+	border-radius: 12px !important;
+}
+.\start_server.ps1:root{--bg:#ffffff;--fg:#111827;--muted:#6b7280;--primary:#2563eb;--primary-600:#1d4ed8;--card-bg:#ffffff;--card-border:#e5e7eb;--chip-bg:#f1f5f9;--chip-border:#e2e8f0;--shadow:0 6px 18px rgba(0,0,0,.06);--sun-start:rgba(253,224,71,.35);--sun-end:rgba(253,224,71,0);--rain-accent:rgba(59,130,246,.18);--rain-accent-2:rgba(59,130,246,.06);--loader-bg:rgba(0,0,0,.25)}
 [data-theme="dark"]{--bg:#0b0f19;--fg:#e5e7eb;--muted:#9ca3af;--primary:#3b82f6;--primary-600:#2563eb;--card-bg:#111827;--card-border:#1f2937;--chip-bg:#111827;--chip-border:#374151;--shadow:0 6px 18px rgba(0,0,0,.35);--sun-start:rgba(250,204,21,.22);--sun-end:rgba(250,204,21,0);--rain-accent:rgba(96,165,250,.22);--rain-accent-2:rgba(96,165,250,.08);--loader-bg:rgba(255,255,255,.08)}
 
 html,body{background:var(--bg);color:var(--fg);margin:0}
 .container{max-width:1080px;margin:72px auto 32px;padding:0 18px;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
 
 /* global topbar */
-.topbar{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;gap:10px;align-items:center;justify-content:flex-start;background:var(--bg);border-bottom:1px solid var(--card-border);padding:8px 12px}
-.topbar select{padding:8px 12px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--fg);border-radius:10px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;gap:10px;align-items:center;justify-content:flex-start;background:var(--bg);border-bottom:1px solid var(--card-border);padding:12px 18px;backdrop-filter:blur(8px);box-shadow:0 2px 20px rgba(0,0,0,.08)}
+.topbar select{padding:10px 14px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--fg) !important;border-radius:12px;font-size:14px;transition:all .2s ease;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.topbar select:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(37,99,235,.1);color:var(--fg) !important}
+.topbar select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1);color:var(--fg) !important}
+
+/* 顶部导航栏按钮样式修复 */
+.topbar button {
+	padding: 8px 12px;
+	border: 1px solid var(--card-border);
+	background: var(--card-bg);
+	color: var(--fg) !important; /* 确保按钮文字可见 */
+	border-radius: 10px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: all .2s ease;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.topbar button:hover {
+	background: var(--primary);
+	color: #fff !important; /* 悬停时文字变白色 */
+	border-color: var(--primary);
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+	transform: translateY(-1px);
+}
+
+.topbar button:active {
+	transform: translateY(0);
+	color: #fff !important; /* 点击时文字保持白色 */
+}
+
+/* 顶部导航栏输入框样式修复 */
+.topbar input {
+	padding: 8px 12px;
+	border: 1px solid var(--card-border);
+	background: var(--card-bg);
+	color: var(--fg) !important; /* 确保搜索框文字可见 */
+	border-radius: 10px;
+	min-width: 220px;
+	font-size: 14px;
+	transition: all .2s ease;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.topbar input:hover {
+	border-color: var(--primary);
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+	color: var(--fg) !important; /* 悬停时文字保持可见 */
+}
+
+.topbar input:focus {
+	outline: none;
+	border-color: var(--primary);
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+	color: var(--fg) !important; /* 聚焦时文字保持可见 */
+}
 
 @media (max-width:720px){
 	.container{margin-top:92px}
-	.topbar{gap:6px;flex-wrap:wrap}
-	.topbar select{flex:1}
+	.topbar{gap:6px;flex-wrap:wrap;padding:10px 14px}
+	.topbar select{flex:1;font-size:13px}
 }
 
-h1{font-size:30px;margin:0 0 16px}
-h2{font-size:20px;margin:24px 0 8px}
-.hint{color:var(--muted);font-size:12px;margin-top:6px}
+h1{font-size:30px;margin:0 0 16px;background:linear-gradient(135deg, var(--primary), #7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+h2{font-size:20px;margin:24px 0 8px;color:var(--fg);font-weight:600}
+.hint{color:var(--muted);font-size:12px;margin-top:6px;display:flex;align-items:center;gap:6px}
+.hint::before{content:"";font-size:14px}
 
-.cards{display:flex;gap:14px;margin:12px 0 20px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
-.cards::-webkit-scrollbar{height:8px}
-.cards::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:999px}
-.card{scroll-snap-align:start;min-width:210px}
-.card{border:1px solid var(--card-border);border-radius:12px;padding:14px;background:var(--card-bg);box-shadow:var(--shadow);position:relative;overflow:hidden}
+/* 数据来源模态框 */
+.data-source-modal{
+	position:fixed;
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+	background:rgba(0,0,0,0.7);
+	backdrop-filter:blur(8px);
+	z-index:1000;
+	opacity:0;
+	visibility:hidden;
+	transition:all 0.3s ease;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+}
+
+.data-source-modal.show{
+	opacity:1;
+	visibility:visible;
+}
+
+.data-source-modal-content{
+	background:var(--card-bg);
+	border-radius:16px;
+	padding:24px;
+	max-width:400px;
+	width:90%;
+	max-height:80vh;
+	overflow-y:auto;
+	box-shadow:0 20px 60px rgba(0,0,0,0.3);
+	transform:scale(0.9);
+	transition:transform 0.3s ease;
+	border:1px solid var(--card-border);
+}
+
+.data-source-modal.show .data-source-modal-content{
+	transform:scale(1);
+}
+
+.data-source-modal-header{
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	margin-bottom:20px;
+	padding-bottom:16px;
+	border-bottom:1px solid var(--card-border);
+}
+
+.data-source-modal-title{
+	font-size:18px;
+	font-weight:600;
+	margin:0;
+	color:var(--fg);
+}
+
+.data-source-modal-close{
+	background:none;
+	border:none;
+	font-size:24px;
+	cursor:pointer;
+	color:var(--muted);
+	padding:0;
+	width:32px;
+	height:32px;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	border-radius:50%;
+	transition:background 0.2s;
+}
+
+.data-source-modal-close:hover{
+	background:var(--chip-bg);
+}
+
+.data-source-modal-grid{
+	display:grid;
+	grid-template-columns:1fr 1fr;
+	gap:12px;
+	margin-bottom:16px;
+}
+
+.data-source-modal-item{
+	text-align:center;
+	padding:12px;
+	background:var(--chip-bg);
+	border-radius:8px;
+	border:1px solid var(--chip-border);
+}
+
+.data-source-modal-label{
+	font-size:12px;
+	color:var(--muted);
+	margin-bottom:4px;
+	font-weight:500;
+}
+
+.data-source-modal-value{
+	font-size:16px;
+	font-weight:600;
+	color:var(--fg);
+}
+
+.data-source-modal-formula{
+	background:var(--chip-bg);
+	padding:12px;
+	border-radius:8px;
+	border:1px solid var(--chip-border);
+	margin-top:12px;
+	font-family:monospace;
+	font-size:13px;
+	color:var(--fg);
+	text-align:center;
+}
+
+.data-source-modal-formula .highlight{
+	color:var(--primary);
+	font-weight:600;
+}
+
+/* 移除旧的卡片放大效果 */
+.card.expanded{
+	/* 移除所有放大相关样式 */
+}
+
+.card.expanded .card-front,
+.card.expanded .card-back{
+	transform:none; /* 重置翻转变换 */
+	opacity:1;
+	width:100%;
+	height:100%;
+}
+
+/* 放大后卡片显示数据来源（背面内容） */
+.card.expanded .card-front{
+	opacity:0; /* 隐藏正面内容 */
+}
+
+.card.expanded .card-back{
+	opacity:1; /* 显示背面内容（数据来源） */
+	transform:none; /* 重置变换 */
+}
+
+/* 放大后卡片的字体大小调整 */
+.card.expanded .card-back-title{
+	font-size:18px;
+	margin-bottom:15px;
+	font-weight:600;
+}
+
+.card.expanded .data-source-grid{
+	gap:10px;
+	margin-bottom:15px;
+}
+
+.card.expanded .data-source-item{
+	padding:10px;
+	font-size:16px;
+	min-height:35px;
+}
+
+.card.expanded .data-source-label{
+	font-size:12px;
+	margin-bottom:4px;
+	font-weight:500;
+}
+
+.card.expanded .data-source-value{
+	font-size:14px;
+	font-weight:600;
+}
+
+.card.expanded .data-source-formula{
+	font-size:12px;
+	margin-top:10px;
+	padding:10px;
+	max-height:60px;
+	line-height:1.4;
+}
+
+/* 确保放大后的卡片内容完全可见 */
+.card.expanded .card-back{
+	padding:20px;
+	overflow:visible;
+	justify-content:flex-start;
+}
+
+.card.expanded .card-back > * {
+	max-width:100%;
+	box-sizing:border-box;
+}
+
+/* 放大后卡片的天气图标调整 */
+.card.expanded .weather-icon{
+	width:36px;
+	height:36px;
+	right:20px;
+	top:20px;
+}
+
+/* 放大后卡片的提示文字调整 */
+.card.expanded .flip-hint{
+	font-size:14px;
+	bottom:15px;
+	right:15px;
+}
+
+/* 响应式网格布局 */
+@media (max-width: 768px) {
+	.cards {
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 10px;
+	}
+}
+
+@media (min-width: 1200px) {
+	.cards {
+		grid-template-columns: repeat(4, 1fr); /* 大屏幕显示4列 */
+	}
+}
+
+/* 毛玻璃背景遮罩 - 更轻的遮罩效果 */
+.card-overlay{
+	position:fixed;
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+	background:rgba(0,0,0,0.2); /* 非常轻的遮罩，几乎不影响背景可见性 */
+	z-index:999;
+	opacity:0;
+	visibility:hidden;
+	transition:all 0.3s ease;
+}
+
+.card-overlay.show{
+	opacity:1;
+	visibility:visible;
+}
+
+/* 只对天气卡片区域应用模糊效果 */
+.cards.blurred .card:not(.expanded){
+	filter:blur(1.5px); /* 轻微模糊 */
+	opacity:0.5; /* 适度降低透明度 */
+	transform:scale(0.99); /* 几乎不缩小 */
+	transition:all 0.3s ease;
+	pointer-events:none; /* 禁用其他卡片的点击 */
+}
+
+/* 确保页面其他所有内容都保持清晰 */
+.container > *:not(.cards) {
+	filter: none !important;
+	opacity: 1 !important;
+	transform: none !important;
+}
+
+/* 特别确保这些区域完全不受影响 */
+.topbar,
+.assistant,
+.extremes,
+.section,
+h1, h2, .hint {
+	filter: none !important;
+	opacity: 1 !important;
+	transform: none !important;
+	z-index: 1002 !important; /* 确保在遮罩之上 */
+}
+
+/* 关键：确保网格布局中的空位保持 */
+.cards{
+	display:grid;
+	grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
+	gap:14px;
+	margin:12px 0 20px;
+}
+
+.card{
+	scroll-snap-align:start;
+	min-width:210px;
+	border:1px solid var(--card-border);
+	border-radius:12px;
+	padding:14px;
+	background:var(--card-bg);
+	box-shadow:var(--shadow);
+	position:relative;
+	overflow:hidden;
+	cursor:pointer;
+	transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);
+	transform-style:preserve-3d;
+	perspective:1000px;
+	min-height:170px;
+}
+
+.card:hover{transform:translateY(-4px) rotateY(5deg);box-shadow:0 12px 32px rgba(0,0,0,.15);border-color:var(--primary)}
+.card:active{transform:translateY(-2px)}
 .card .date{font-weight:700;margin-bottom:6px}
 .card .temp{font-size:22px;margin:6px 0}
 .card .meta{color:var(--muted);font-size:13px;line-height:1.6}
+.flip-hint{position:absolute;bottom:8px;right:8px;font-size:10px;color:var(--muted);opacity:.7;font-weight:500;pointer-events:none}
 
 /* Weather themed backgrounds */
-.card.weather-sunny{
-	background:
-		radial-gradient(circle at 85% 12%, var(--sun-start) 0%, var(--sun-end) 38%),
-		var(--card-bg);
-}
-.card.weather-rainy{
-	background:
-		linear-gradient(180deg, var(--rain-accent-2) 0%, transparent 55%),
-		repeating-linear-gradient(135deg, var(--rain-accent) 0 2px, transparent 2px 10px),
-		var(--card-bg);
-}
-.card .weather-mark{
-	position:absolute;right:12px;top:10px;font-size:22px;opacity:.9;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));pointer-events:none
+.card.weather-sunny{background:radial-gradient(circle at 85% 12%, var(--sun-start) 0%, var(--sun-end) 42%), var(--card-bg)}
+.card.weather-rainy{background:linear-gradient(180deg, var(--rain-accent-2) 0%, transparent 55%), repeating-linear-gradient(135deg, var(--rain-accent) 0 2px, transparent 2px 10px), var(--card-bg)}
+/* 天气图标优化 */
+.card .weather-icon{
+	position:absolute;
+	right:12px;
+	top:10px;
+	width:26px;
+	height:26px;
+	opacity:.9;
+	filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
+	pointer-events:none;
+	transition: all 0.3s ease;
 }
 
-.card .weather-icon{position:absolute;right:10px;top:10px;width:26px;height:26px;opacity:.95;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));pointer-events:none}
+/* 晴天图标效果 */
+.card.weather-sunny .weather-icon{
+	filter: drop-shadow(0 2px 4px rgba(253, 224, 71, 0.3));
+}
+
+/* 雨天图标效果 */
+.card.weather-rainy .weather-icon{
+	filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+}
+
+/* 浅色主题下的图标效果 */
+[data-theme="light"] .card.weather-sunny .weather-icon{
+	filter: drop-shadow(0 2px 4px rgba(253, 224, 71, 0.4));
+}
+
+[data-theme="light"] .card.weather-rainy .weather-icon{
+	filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.4));
+}
+
+/* 深色主题下的图标效果 */
+[data-theme="dark"] .card.weather-sunny .weather-icon{
+	filter: drop-shadow(0 2px 4px rgba(250, 204, 21, 0.3));
+}
+
+[data-theme="dark"] .card.weather-rainy .weather-icon{
+	filter: drop-shadow(0 2px 4px rgba(96, 165, 250, 0.3));
+}
+
+/* Card flip animation */
+.card-front, .card-back{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	transition:all .6s ease;
+	padding:14px;
+	box-sizing:border-box;
+	border-radius:12px;
+	overflow:hidden;
+}
+
+.card-front{
+	opacity:1;
+	transform:rotateY(0deg);
+	background:inherit;
+	z-index:2;
+}
+
+.card-back{
+	opacity:0;
+	transform:rotateY(180deg);
+	background:var(--card-bg);
+	display:flex;
+	flex-direction:column;
+	justify-content:center;
+	align-items:center;
+	text-align:center;
+	z-index:1;
+	overflow-y:auto;
+	overflow-x:hidden;
+}
+
+/* Back side content */
+.card-back-title{
+	font-size:13px;
+	font-weight:600;
+	margin-bottom:8px;
+	color:var(--fg);
+	text-align:center;
+	line-height:1.2;
+	flex-shrink:0;
+}
+
+.data-source-grid{
+	display:grid;
+	grid-template-columns:1fr 1fr;
+	gap:4px;
+	margin-bottom:8px;
+	width:100%;
+	flex-shrink:0;
+}
+
+.data-source-item{
+	text-align:center;
+	padding:4px;
+	background:var(--chip-bg);
+	border-radius:4px;
+	border:1px solid var(--chip-border);
+	transition:all .2s ease;
+	font-size:10px;
+}
+
+.data-source-item:hover{
+	background:var(--card-bg);
+	border-color:var(--primary);
+	transform:translateY(-1px);
+}
+
+.data-source-label{
+	font-size:8px;
+	color:var(--muted);
+	margin-bottom:2px;
+	font-weight:500;
+	line-height:1.1;
+}
+
+.data-source-value{
+	font-size:10px;
+	font-weight:600;
+	color:var(--fg);
+	line-height:1.1;
+}
+
+.data-source-formula{
+	font-size:8px;
+	color:var(--muted);
+	line-height:1.2;
+	margin-top:4px;
+	text-align:center;
+	padding:4px;
+	background:var(--chip-bg);
+	border-radius:4px;
+	border:1px solid var(--chip-border);
+	word-break:break-word;
+	width:100%;
+	flex-shrink:0;
+	max-height:40px;
+	overflow:hidden;
+}
+
+.data-source-formula .highlight{
+	color:var(--primary);
+	font-weight:600;
+}
+
+/* 优化卡片样式 - 晴天雨天主题 */
+.card.weather-sunny{
+	background:radial-gradient(circle at 85% 12%, var(--sun-start) 0%, var(--sun-end) 42%), var(--card-bg);
+	border-color: rgba(253, 224, 71, 0.3);
+}
+
+.card.weather-rainy{
+	background:linear-gradient(180deg, var(--rain-accent-2) 0%, transparent 55%), repeating-linear-gradient(135deg, var(--rain-accent) 0 2px, transparent 2px 10px), var(--card-bg);
+	border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* 浅色主题下的卡片样式优化 */
+[data-theme="light"] .card.weather-sunny{
+	background:radial-gradient(circle at 85% 12%, rgba(253, 224, 71, 0.4) 0%, rgba(253, 224, 71, 0.1) 42%), var(--card-bg);
+	border-color: rgba(253, 224, 71, 0.5);
+	box-shadow: 0 4px 12px rgba(253, 224, 71, 0.2);
+}
+
+[data-theme="light"] .card.weather-rainy{
+	background:linear-gradient(180deg, rgba(59, 130, 246, 0.1) 0%, transparent 55%), repeating-linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0 2px, transparent 2px 10px), var(--card-bg);
+	border-color: rgba(59, 130, 246, 0.4);
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* 深色主题下的卡片样式优化 */
+[data-theme="dark"] .card.weather-sunny{
+	background:radial-gradient(circle at 85% 12%, rgba(250, 204, 21, 0.3) 0%, rgba(250, 204, 21, 0.05) 42%), var(--card-bg);
+	border-color: rgba(250, 204, 21, 0.4);
+	box-shadow: 0 4px 12px rgba(250, 204, 21, 0.1);
+}
+
+[data-theme="dark"] .card.weather-rainy{
+	background:linear-gradient(180deg, rgba(96, 165, 250, 0.15) 0%, transparent 55%), repeating-linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0 2px, transparent 2px 10px), var(--card-bg);
+	border-color: rgba(96, 165, 250, 0.3);
+	box-shadow: 0 4px 12px rgba(96, 165, 250, 0.1);
+}
+
+/* 卡片悬停效果优化 */
+.card.weather-sunny:hover{
+	border-color: rgba(253, 224, 71, 0.6);
+	box-shadow: 0 8px 24px rgba(253, 224, 71, 0.25);
+}
+
+.card.weather-rainy:hover{
+	border-color: rgba(59, 130, 246, 0.6);
+	box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+}
+
+/* 恢复其他重要样式 */
+.section{margin:10px 0 24px}
+
+/* 生活助手区域样式优化 */
+.assistant {
+	background: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 16px;
+	box-shadow: var(--shadow);
+	padding: 20px;
+	margin-bottom: 24px;
+	transition: all .3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+/* 生活助手背景渐变效果 */
+.assistant::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+	pointer-events: none;
+	z-index: 0;
+}
+
+.assistant > * {
+	position: relative;
+	z-index: 1;
+}
+
+.assistant:hover {
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+	transform: translateY(-2px);
+	border-color: var(--primary);
+}
+
+/* 生活助手标题样式 */
+.assistant h1 {
+	font-size: 30px;
+	margin: 0 0 16px;
+	color: var(--fg) !important; /* 改为正常的深色文字，不使用透明渐变 */
+	font-weight: 700;
+	background: none; /* 移除渐变背景 */
+	-webkit-background-clip: unset;
+	-webkit-text-fill-color: unset;
+	background-clip: unset;
+}
+
+/* 生活助手输入框样式 */
+.input-row {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.input-row input {
+	flex: 1;
+	min-width: 300px;
+	padding: 14px 16px;
+	border: 2px solid var(--card-border);
+	border-radius: 12px;
+	font-size: 15px;
+	background: var(--bg);
+	color: var(--fg) !important;
+	transition: all .2s ease;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.input-row input:focus {
+	outline: none;
+	border-color: var(--primary);
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 4px 12px rgba(0, 0, 0, 0.15);
+	background: #fff;
+}
+
+.input-row input:hover {
+	border-color: var(--primary);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 极端天气卡片样式优化 */
+.extremes {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.extreme-card {
+	background: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 16px;
+	box-shadow: var(--shadow);
+	padding: 16px;
+	transition: all .3s ease;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+}
+
+/* 极端天气卡片背景效果 */
+.extreme-card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%);
+	pointer-events: none;
+	z-index: 0;
+}
+
+.extreme-card > * {
+	position: relative;
+	z-index: 1;
+}
+
+.extreme-card:hover {
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+	transform: translateY(-2px);
+	border-color: #ef4444;
+}
+
+.extreme-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 8px;
+}
+
+.extreme-date {
+	font-weight: 700;
+	font-size: 15px;
+	color: var(--fg) !important; /* 确保日期颜色正确 */
+}
+
+.extreme-meta {
+	color: var(--muted) !important; /* 确保元数据颜色正确 */
+	font-size: 14px;
+	line-height: 1.6;
+	margin-bottom: 8px;
+}
+
+/* 徽章样式优化 */
+.badge {
+	padding: 4px 10px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .5px;
+}
+
+.badge-high {
+	background: linear-gradient(135deg, #fee2e2, #fecaca);
+	color: #b91c1c !important;
+	border: 1px solid #fecaca;
+	box-shadow: 0 2px 8px rgba(185, 28, 28, 0.15);
+}
+
+.badge-low {
+	background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+	color: #075985 !important;
+	border: 1px solid #bae6fd;
+	box-shadow: 0 2px 8px rgba(7, 89, 133, 0.15);
+}
+
+/* 建议框样式优化 */
+.advice {
+	background: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 16px;
+	box-shadow: var(--shadow);
+	padding: 18px;
+	margin-top: 16px;
+	transition: all .3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.advice::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
+	pointer-events: none;
+	z-index: 0;
+}
+
+.advice > * {
+	position: relative;
+	z-index: 1;
+}
+
+.advice:hover {
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+	transform: translateY(-2px);
+	border-color: #22c55e;
+}
+
+.advice .title {
+	font-weight: 700;
+	margin-bottom: 8px;
+	color: var(--primary) !important; /* 确保标题颜色正确 */
+	font-size: 16px;
+}
+
+.advice .items {
+	margin: 8px 0 0 16px;
+	color: var(--fg) !important; /* 确保列表项颜色正确 */
+	line-height: 1.6;
+}
+
+.advice .items li {
+	margin-bottom: 4px;
+	padding-left: 4px;
+	color: var(--fg) !important; /* 确保列表项颜色正确 */
+}
 
 /* Loader overlay */
 .loader-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--loader-bg);backdrop-filter:blur(2px);z-index:2000}
@@ -53,48 +855,290 @@ h2{font-size:20px;margin:24px 0 8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loader{animation:spin 1.2s linear infinite}
 
-/* Data source button and modal */
-.data-source-btn{position:absolute;right:8px;bottom:8px;width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;opacity:.8;transition:opacity .2s}
-.data-source-btn:hover{opacity:1}
-.data-source-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:3000;opacity:0;visibility:hidden;transition:all .3s}
-.data-source-modal.show{opacity:1;visibility:visible}
-.data-source-content{background:var(--card-bg);border-radius:16px;padding:24px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);transform:scale(.9);transition:transform .3s}
-.data-source-modal.show .data-source-content{transform:scale(1)}
-.data-source-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--card-border)}
-.data-source-title{font-size:18px;font-weight:600;margin:0}
-.data-source-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background .2s}
-.data-source-close:hover{background:var(--chip-bg)}
-.data-source-item{margin-bottom:16px;padding:16px;background:var(--chip-bg);border-radius:12px;border:1px solid var(--chip-border)}
-.data-source-item-title{font-weight:600;margin-bottom:8px;color:var(--fg)}
-.data-source-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
-.data-source-value{text-align:center;padding:8px;background:var(--card-bg);border-radius:8px;border:1px solid var(--card-border)}
-.data-source-value-label{font-size:12px;color:var(--muted);margin-bottom:4px}
-.data-source-value-number{font-size:16px;font-weight:600;color:var(--fg)}
-.data-source-formula{background:var(--card-bg);padding:12px;border-radius:8px;border:1px solid var(--card-border);margin-top:8px;font-family:monospace;font-size:13px;color:var(--fg)}
 
-.section{margin:10px 0 24px}
 
-/* Life assistant */
-.assistant{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;box-shadow:var(--shadow);padding:16px;margin-bottom:18px}
-.input-row{display:flex;gap:10px;align-items:center}
-.input-row input{flex:1;min-width:300px;padding:12px 14px;border:1px solid var(--card-border);border-radius:10px;font-size:15px;background:var(--bg);color:var(--fg)}
-.btn-primary{padding:11px 18px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer}
-.btn-primary:hover{background:var(--primary-600)}
+/* 确保浅色主题下所有文字都是深色 */
+[data-theme="light"] {
+	--fg: #111827;
+	--muted: #6b7280;
+}
 
-/* Extremes list */
-.extremes{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.extreme-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;box-shadow:var(--shadow);padding:12px}
-.extreme-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.extreme-date{font-weight:700}
-.badge{padding:2px 8px;border-radius:999px;font-size:12px}
-.badge-high{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
-.badge-low{background:#e0f2fe;color:#075985;border:1px solid #bae6fd}
-.extreme-meta{color:var(--muted);font-size:13px;line-height:1.6}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.chip{background:var(--chip-bg);border:1px solid var(--chip-border);color:var(--fg);padding:2px 8px;border-radius:999px;font-size:12px}
-.city-label{margin-left:6px}
+[data-theme="light"] * {
+	color: var(--fg) !important;
+}
 
-/* Advice box inside assistant */
-.advice{background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;box-shadow:var(--shadow);padding:14px}
-.advice .title{font-weight:700;margin-bottom:6px}
-.advice .items{margin:6px 0 0 14px;color:var(--fg)}
+/* 浅色主题下的特殊元素颜色 */
+[data-theme="light"] .btn-primary {
+	color: #fff !important; /* 按钮文字保持白色 */
+}
+
+[data-theme="light"] .chip:hover {
+	color: #fff !important; /* 悬停时的chip文字保持白色 */
+}
+
+[data-theme="light"] .badge-high {
+	color: #b91c1c !important; /* 高风险徽章保持红色 */
+}
+
+[data-theme="light"] .badge-low {
+	color: #075985 !important; /* 低风险徽章保持蓝色 */
+}
+
+/* 深色主题下的文字颜色 */
+[data-theme="dark"] {
+	--fg: #e5e7eb;
+	--muted: #9ca3af;
+}
+
+/* 浅色主题下的晴天雨天样式增强 */
+[data-theme="light"] .card.weather-sunny {
+	background: linear-gradient(135deg, rgba(253, 224, 71, 0.3) 0%, rgba(253, 224, 71, 0.1) 50%, rgba(253, 224, 71, 0.05) 100%), var(--card-bg);
+	border: 2px solid rgba(253, 224, 71, 0.6);
+	box-shadow: 0 4px 16px rgba(253, 224, 71, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1);
+	position: relative;
+	overflow: hidden;
+}
+
+[data-theme="light"] .card.weather-sunny::before {
+	content: '';
+	position: absolute;
+	top: -50%;
+	right: -50%;
+	width: 100%;
+	height: 100%;
+	background: radial-gradient(circle, rgba(253, 224, 71, 0.2) 0%, transparent 70%);
+	pointer-events: none;
+}
+
+[data-theme="light"] .card.weather-rainy {
+	background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 50%, rgba(59, 130, 246, 0.05) 100%), var(--card-bg);
+	border: 2px solid rgba(59, 130, 246, 0.6);
+	box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1);
+	position: relative;
+	overflow: hidden;
+}
+
+[data-theme="light"] .card.weather-rainy::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 4px,
+		rgba(59, 130, 246, 0.1) 4px,
+		rgba(59, 130, 246, 0.1) 8px
+	);
+	pointer-events: none;
+}
+
+/* 浅色主题下晴天雨天的悬停效果增强 */
+[data-theme="light"] .card.weather-sunny:hover {
+	border-color: rgba(253, 224, 71, 0.8);
+	box-shadow: 0 8px 24px rgba(253, 224, 71, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
+	transform: translateY(-2px);
+}
+
+[data-theme="light"] .card.weather-rainy:hover {
+	border-color: rgba(59, 130, 246, 0.8);
+	box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
+	transform: translateY(-2px);
+}
+
+/* 浅色主题下天气图标增强 */
+[data-theme="light"] .card.weather-sunny .weather-icon {
+	filter: drop-shadow(0 2px 6px rgba(253, 224, 71, 0.5));
+	transform: scale(1.1);
+}
+
+[data-theme="light"] .card.weather-rainy .weather-icon {
+	filter: drop-shadow(0 2px 6px rgba(59, 130, 246, 0.5));
+	transform: scale(1.1);
+}
+
+/* 按钮样式修复 - 增强优先级 */
+.btn-primary,
+button.btn-primary,
+#btn-send,
+#btn-ip-city {
+	padding: 14px 20px !important;
+	border: none !important;
+	border-radius: 12px !important;
+	background: var(--primary) !important;
+	color: #fff !important; /* 确保按钮文字始终是白色 */
+	font-weight: 600 !important;
+	cursor: pointer !important;
+	transition: all .2s ease !important;
+	font-size: 15px !important;
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+.btn-primary:hover,
+button.btn-primary:hover,
+#btn-send:hover,
+#btn-ip-city:hover {
+	background: var(--primary-600) !important;
+	transform: translateY(-1px) !important;
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+	color: #fff !important; /* 悬停时文字保持白色 */
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+.btn-primary:active,
+button.btn-primary:active,
+#btn-send:active,
+#btn-ip-city:active {
+	transform: translateY(0) !important;
+	color: #fff !important; /* 点击时文字保持白色 */
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+/* 顶部导航栏按钮特殊样式 */
+.topbar .btn-primary,
+.topbar button.btn-primary,
+.topbar #btn-ip-city {
+	padding: 8px 12px !important;
+	font-size: 14px !important;
+	border-radius: 10px !important;
+}
+
+/* Chip样式 */
+.chips {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-top: 8px;
+}
+
+.chip {
+	background: var(--chip-bg);
+	border: 1px solid var(--chip-border);
+	color: var(--fg) !important; /* 确保chip文字可见 */
+	padding: 4px 10px;
+	border-radius: 999px;
+	font-size: 12px;
+	transition: all .2s ease;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chip:hover {
+	background: var(--primary);
+	color: #fff !important; /* 悬停时文字变白色 */
+	border-color: var(--primary);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.city-label {
+	margin-left: 6px;
+	opacity: .8;
+}
+
+/* 浅色主题下的按钮样式修复 */
+[data-theme="light"] .btn-primary,
+[data-theme="light"] button.btn-primary,
+[data-theme="light"] #btn-send,
+[data-theme="light"] #btn-ip-city {
+	background: #2563eb !important; /* 明确的蓝色背景 */
+	color: #ffffff !important; /* 白色文字 */
+	border: none !important;
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+[data-theme="light"] .btn-primary:hover,
+[data-theme="light"] button.btn-primary:hover,
+[data-theme="light"] #btn-send:hover,
+[data-theme="light"] #btn-ip-city:hover {
+	background: #1d4ed8 !important; /* 悬停时深蓝色 */
+	color: #ffffff !important;
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+	transform: translateY(-1px) !important;
+}
+
+[data-theme="light"] .btn-primary:active,
+[data-theme="light"] button.btn-primary:active,
+[data-theme="light"] #btn-send:active,
+[data-theme="light"] #btn-ip-city:active {
+	background: #1e40af !important; /* 点击时更深蓝色 */
+	color: #ffffff !important;
+	transform: translateY(0) !important;
+}
+
+/* 深色主题下的按钮样式 */
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] button.btn-primary,
+[data-theme="dark"] #btn-send,
+[data-theme="dark"] #btn-ip-city {
+	background: #3b82f6 !important;
+	color: #ffffff !important;
+	border: none !important;
+	box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+[data-theme="dark"] .btn-primary:hover,
+[data-theme="dark"] button.btn-primary:hover,
+[data-theme="dark"] #btn-send:hover,
+[data-theme="dark"] #btn-ip-city:hover {
+	background: #2563eb !important;
+	color: #ffffff !important;
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+	transform: translateY(-1px) !important;
+}
+
+/* 清新简约的加载动画 */
+.loader-overlay {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(4px);
+	z-index: 2000;
+}
+
+.loader {
+	width: 40px;
+	height: 40px;
+	border: 3px solid rgba(255, 255, 255, 0.3);
+	border-top: 3px solid #fff;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+/* 加载文字 */
+.loader-text {
+	margin-top: 16px;
+	color: #fff;
+	font-size: 14px;
+	font-weight: 400;
+	opacity: 0.9;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+/* 加载动画容器 */
+.loader-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 32px;
+	background: rgba(0, 0, 0, 0.6);
+	border-radius: 12px;
+	backdrop-filter: blur(8px);
+}

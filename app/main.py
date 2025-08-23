@@ -3,6 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
+import os
+
+# 设置环境变量来禁用TensorFlow的oneDNN警告
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # 禁用INFO和WARNING日志
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # 禁用oneDNN优化
 
 from .data_loader import load_city_weather, get_data_source, refresh_data
 from .forecasting import forecast_temperature_and_precipitation

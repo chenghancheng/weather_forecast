@@ -10,7 +10,7 @@
 <body>
 	<div class="container">
 		<div class="topbar" style="justify-content:flex-end">
-			<input id="city-search" list="city-suggestions" placeholder="搜索城市(中文/拼音/English)" style="padding:8px 12px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--fg);border-radius:10px;min-width:220px" />
+			<input id="city-search" list="city-suggestions" placeholder="搜索城市(中文/拼音/English)" />
 			<datalist id="city-suggestions"></datalist>
 			<select id="city">
 				<option value="北京" selected>北京</option>
@@ -19,7 +19,7 @@
 				<option value="深圳">深圳</option>
 			</select>
 			<span id="city-label" class="chip">北京</span>
-			<button id="btn-ip-city" class="btn-primary" style="padding:8px 12px">IP</button>
+			<button id="btn-ip-city" class="btn-primary">IP</button>
 			<select id="lang">
 				<option value="zh">中文</option>
 				<option value="en">English</option>
@@ -49,25 +49,33 @@
 		<div class="section">
 			<h2 id="title-history" data-i18n="history.title">近14天（气温&降水）</h2>
 			<canvas id="histChart" height="120"></canvas>
-			<div class="hint" id="hint-refresh" data-i18n="history.hint">数据不对？<a href="#" onclick="refreshData();return false;">刷新数据</a></div>
+
 		</div>
 	</div>
 
-	<div id="loader" class="loader-overlay" style="display:none"><div class="loader" aria-label="loading"></div></div>
+	<div id="loader" class="loader-overlay" style="display:none">
+		<div class="loader-container">
+			<div class="loader" aria-label="loading"></div>
+			<div class="loader-text">正在加载天气数据...</div>
+		</div>
+	</div>
 	
-	<!-- Data Source Modal -->
-	<div id="dataSourceModal" class="data-source-modal">
-		<div class="data-source-content">
-			<div class="data-source-header">
-				<h3 class="data-source-title">数据来源详情</h3>
-				<button class="data-source-close" onclick="closeDataSourceModal()">&times;</button>
+	<!-- 卡片遮罩层 -->
+	<div id="card-overlay" class="card-overlay"></div>
+	
+	<!-- 数据来源模态框 -->
+	<div id="data-source-modal" class="data-source-modal">
+		<div class="data-source-modal-content">
+			<div class="data-source-modal-header">
+				<h3 class="data-source-modal-title" id="modal-title">数据来源</h3>
+				<button class="data-source-modal-close" onclick="closeDataSourceModal()">×</button>
 			</div>
-			<div id="dataSourceContent">
-				<!-- Content will be populated by JavaScript -->
+			<div id="data-source-modal-body">
+				<!-- 数据内容将通过JavaScript动态填充 -->
 			</div>
 		</div>
 	</div>
 	
-	<script src="/static/app.js?v=weather-ui3"></script>
+	<script src="/static/app.js?v=weather-ui7"></script>
 </body>
 </html>
