@@ -8,6 +8,13 @@
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+	<!-- 动态背景动画 -->
+	<div id="weather-background" class="weather-background">
+		<div id="sun-animation" class="sun-animation"></div>
+		<div id="rain-animation" class="rain-animation"></div>
+		<div id="clouds-animation" class="clouds-animation"></div>
+	</div>
+
 	<div class="container">
 		<div class="topbar" style="justify-content:flex-end">
 			<input id="city-search" list="city-suggestions" placeholder="搜索城市(中文/拼音/English)" />

@@ -365,6 +365,10 @@ async function renderForecast(){
 		const list = data.forecast || [];
 		latestForecastData = list; // 保存预报数据
 		cardsEl.innerHTML = list.map(card).join('');
+		
+		// 保存预报数据并更新背景
+		window.currentForecastData = list;
+		updateWeatherBackground();
 	}catch(e){
 		cardsEl.innerHTML = `<div class="card">${String(e)}</div>`;
 	}
@@ -643,5 +647,171 @@ function hideLoader() {
 	const loader = document.getElementById('loader');
 	if (loader) {
 		loader.style.display = 'none';
+	}
+}
+
+// 动态背景控制
+class WeatherBackgroundController {
+	constructor() {
+		this.background = document.getElementById('weather-background');
+		this.sunAnimation = document.getElementById('sun-animation');
+		this.rainAnimation = document.getElementById('rain-animation');
+		this.cloudsAnimation = document.getElementById('clouds-animation');
+		this.currentWeather = 'sunny';
+		this.rainDrops = [];
+		this.clouds = [];
+		this.init();
+	}
+
+	init() {
+		// 初始化云朵
+		this.createClouds();
+		// 设置默认天气
+		this.setWeather('sunny');
+	}
+
+	createClouds() {
+		// 创建云朵
+		for (let i = 0; i < 5; i++) {
+			this.createCloud(i);
+		}
+	}
+
+	createCloud(index) {
+		const cloud = document.createElement('div');
+		cloud.className = 'cloud';
+		
+		// 随机云朵大小和位置
+		const size = 60 + Math.random() * 80;
+		const top = 10 + Math.random() * 30;
+		const duration = 20 + Math.random() * 30;
+		const delay = Math.random() * 20;
+		
+		cloud.style.cssText = `
+			width: ${size}px;
+			height: ${size * 0.6}px;
+			top: ${top}%;
+			animation-duration: ${duration}s;
+			animation-delay: -${delay}s;
+		`;
+		
+		// 创建云朵的圆形部分
+		const beforeSize = size * 0.4;
+		const afterSize = size * 0.3;
+		
+		cloud.style.setProperty('--before-size', `${beforeSize}px`);
+		cloud.style.setProperty('--after-size', `${afterSize}px`);
+		
+		cloud.style.setProperty('--before-left', `${size * 0.2}px`);
+		cloud.style.setProperty('--before-top', `${size * 0.3}px`);
+		cloud.style.setProperty('--after-left', `${size * 0.6}px`);
+		cloud.style.setProperty('--after-top', `${size * 0.2}px`);
+		
+		this.cloudsAnimation.appendChild(cloud);
+		this.clouds.push(cloud);
+	}
+
+	createRainDrops() {
+		// 清除现有雨滴
+		this.rainAnimation.innerHTML = '';
+		this.rainDrops = [];
+		
+		// 创建新雨滴
+		for (let i = 0; i < 100; i++) {
+			const drop = document.createElement('div');
+			drop.className = 'rain-drop';
+			
+			// 随机雨滴位置和速度
+			const left = Math.random() * 100;
+			const duration = 0.5 + Math.random() * 1;
+			const delay = Math.random() * 2;
+			
+			drop.style.cssText = `
+				left: ${left}%;
+				animation-duration: ${duration}s;
+				animation-delay: -${delay}s;
+			`;
+			
+			this.rainAnimation.appendChild(drop);
+			this.rainDrops.push(drop);
+		}
+	}
+
+	setWeather(weather) {
+		if (this.currentWeather === weather) return;
+		
+		this.currentWeather = weather;
+		
+		// 移除现有主题类
+		this.background.classList.remove('sunny', 'rainy');
+		
+		// 添加新主题类
+		this.background.classList.add(weather);
+		
+		// 控制动画元素
+		if (weather === 'sunny') {
+			this.sunAnimation.classList.add('show');
+			this.rainAnimation.classList.remove('show');
+			this.cloudsAnimation.classList.add('show');
+		} else if (weather === 'rainy') {
+			this.sunAnimation.classList.remove('show');
+			this.rainAnimation.classList.add('show');
+			this.cloudsAnimation.classList.add('show');
+			this.createRainDrops();
+		}
+	}
+
+	// 根据天气预报数据自动设置背景
+	setWeatherFromForecast(forecastData) {
+		if (!forecastData || forecastData.length === 0) return;
+		
+		// 分析未来几天的天气情况，使用更精确的判定标准
+		let sunnyDays = 0;
+		let rainyDays = 0;
+		let totalPrecip = 0;
+		
+		forecastData.forEach(day => {
+			const precip = parseFloat(day.precipitation_mm) || 0;
+			totalPrecip += precip;
+			
+			// 降水阈值：0.5mm以下为晴天，0.5mm以上为雨天
+			if (precip > 0.5) {
+				rainyDays++;
+			} else {
+				sunnyDays++;
+			}
+		});
+		
+		// 计算平均降水量
+		const avgPrecip = totalPrecip / forecastData.length;
+		
+		// 判定逻辑：
+		// 1. 如果雨天数量 > 晴天数量，设为雨天
+		// 2. 如果平均降水量 > 2mm，设为雨天
+		// 3. 否则设为晴天
+		let weatherType = 'sunny';
+		
+		if (rainyDays > sunnyDays || avgPrecip > 2) {
+			weatherType = 'rainy';
+		}
+		
+		console.log(`天气背景判定: 晴天${sunnyDays}天, 雨天${rainyDays}天, 平均降水${avgPrecip.toFixed(1)}mm -> ${weatherType}`);
+		
+		this.setWeather(weatherType);
+	}
+}
+
+// 初始化动态背景控制器
+let weatherBackgroundController;
+
+// 在页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+	weatherBackgroundController = new WeatherBackgroundController();
+});
+
+// 在渲染预报后更新背景
+function updateWeatherBackground() {
+	if (weatherBackgroundController && window.currentForecastData) {
+		weatherBackgroundController.setWeatherFromForecast(window.currentForecastData);
 	}
 }

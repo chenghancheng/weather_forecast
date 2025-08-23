@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>背景动画测试 - 浅色主题专用</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .test-buttons {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .test-buttons h3 {
+            margin: 0 0 15px 0;
+            color: #1f2937;
+        }
+        
+        button {
+            display: block;
+            margin: 8px 0;
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .theme-toggle {
+            background: #10b981;
+        }
+        
+        .theme-toggle:hover {
+            background: #059669;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
+            color: #1f2937;
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .content h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .content p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card h3 {
+            color: #2563eb;
+            margin-top: 0;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .status-indicator h4 {
+            margin: 0 0 10px 0;
+            color: #1f2937;
+        }
+        
+        .status-item {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-buttons">
+        <h3>🎨 背景动画测试</h3>
+        <button onclick="setSunny()">☀️ 晴天模式</button>
+        <button onclick="setRainy()">🌧️ 雨天模式</button>
+        <button onclick="testAnimation()">🎭 测试动画</button>
+        <button onclick="checkStatus()">📊 检查状态</button>
+    </div>
+    
+    <div class="status-indicator">
+        <h4>🎯 当前状态</h4>
+        <div class="status-item">主题: <span id="current-theme">浅色</span></div>
+        <div class="status-item">天气: <span id="current-weather">晴天</span></div>
+        <div class="status-item">背景: <span id="background-status">显示中</span></div>
+    </div>
+    
+    <div class="content">
+        <h1>🎨 漂亮的背景动画测试页面</h1>
+        <p>这个页面专门用来测试浅色主题下的动态背景动画效果</p>
+        <p>点击左侧按钮可以切换不同的天气背景模式</p>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>☀️ 晴天模式</h3>
+                <p><strong>背景：</strong>蓝天白云渐变 + 橙黄渐变</p>
+                <p><strong>动画：</strong>太阳浮动 + 云朵飘过</p>
+                <p><strong>效果：</strong>明亮清新的夏日感觉</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🌧️ 雨天模式</h3>
+                <p><strong>背景：</strong>深灰到浅灰的渐变</p>
+                <p><strong>动画：</strong>雨滴下落 + 云朵飘过</p>
+                <p><strong>效果：</strong>宁静的雨天氛围</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🌓 主题说明</h3>
+                <p><strong>浅色主题：</strong>显示完整的背景动画</p>
+                <p><strong>深色主题：</strong>隐藏背景动画，保持简洁</p>
+                <p><strong>自动切换：</strong>根据天气预报智能选择</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动态背景动画 -->
+    <div id="weather-background" class="weather-background">
+        <div id="sun-animation" class="sun-animation"></div>
+        <div id="rain-animation" class="rain-animation"></div>
+        <div id="clouds-animation" class="clouds-animation"></div>
+    </div>
+
+    <script>
+        // 简化的背景动画控制器
+        class SimpleBackgroundController {
+            constructor() {
+                this.background = document.getElementById('weather-background');
+                this.sunAnimation = document.getElementById('sun-animation');
+                this.rainAnimation = document.getElementById('rain-animation');
+                this.cloudsAnimation = document.getElementById('clouds-animation');
+                this.currentWeather = 'sunny';
+                this.init();
+            }
+
+            init() {
+                this.createClouds();
+                this.setWeather('sunny');
+                this.updateStatus();
+            }
+
+            createClouds() {
+                for (let i = 0; i < 5; i++) {
+                    this.createCloud(i);
+                }
+            }
+
+            createCloud(index) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                
+                const size = 60 + Math.random() * 80;
+                const top = 10 + Math.random() * 30;
+                const duration = 20 + Math.random() * 30;
+                const delay = Math.random() * 20;
+                
+                cloud.style.cssText = `
+                    width: ${size}px;
+                    height: ${size * 0.6}px;
+                    top: ${top}%;
+                    animation-duration: ${duration}s;
+                    animation-delay: -${delay}s;
+                `;
+                
+                const beforeSize = size * 0.4;
+                const afterSize = size * 0.3;
+                
+                cloud.style.setProperty('--before-size', `${beforeSize}px`);
+                cloud.style.setProperty('--after-size', `${afterSize}px`);
+                cloud.style.setProperty('--before-left', `${size * 0.2}px`);
+                cloud.style.setProperty('--before-top', `${size * 0.3}px`);
+                cloud.style.setProperty('--after-left', `${size * 0.6}px`);
+                cloud.style.setProperty('--after-top', `${size * 0.2}px`);
+                
+                this.cloudsAnimation.appendChild(cloud);
+            }
+
+            createRainDrops() {
+                this.rainAnimation.innerHTML = '';
+                
+                for (let i = 0; i < 100; i++) {
+                    const drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    
+                    const left = Math.random() * 100;
+                    const duration = 0.5 + Math.random() * 1;
+                    const delay = Math.random() * 2;
+                    
+                    drop.style.cssText = `
+                        left: ${left}%;
+                        animation-duration: ${duration}s;
+                        animation-delay: -${delay}s;
+                    `;
+                    
+                    this.rainAnimation.appendChild(drop);
+                }
+            }
+
+            setWeather(weather) {
+                if (this.currentWeather === weather) return;
+                
+                this.currentWeather = weather;
+                this.background.classList.remove('sunny', 'rainy');
+                this.background.classList.add(weather);
+                
+                if (weather === 'sunny') {
+                    this.sunAnimation.classList.add('show');
+                    this.rainAnimation.classList.remove('show');
+                    this.cloudsAnimation.classList.add('show');
+                } else if (weather === 'rainy') {
+                    this.sunAnimation.classList.remove('show');
+                    this.rainAnimation.classList.add('show');
+                    this.cloudsAnimation.classList.add('show');
+                    this.createRainDrops();
+                }
+                
+                this.updateStatus();
+            }
+
+            updateStatus() {
+                document.getElementById('current-weather').textContent = 
+                    this.currentWeather === 'sunny' ? '晴天' : '雨天';
+                
+                const isVisible = this.background.style.display !== 'none';
+                document.getElementById('background-status').textContent = 
+                    isVisible ? '显示中' : '已隐藏';
+            }
+        }
+
+        // 初始化背景控制器
+        const bgController = new SimpleBackgroundController();
+
+        // 测试函数
+        function setSunny() {
+            bgController.setWeather('sunny');
+            console.log('切换到晴天模式');
+        }
+
+        function setRainy() {
+            bgController.setWeather('rainy');
+            console.log('切换到雨天模式');
+        }
+
+        function testAnimation() {
+            // 快速切换动画来测试效果
+            setSunny();
+            setTimeout(() => setRainy(), 2000);
+            setTimeout(() => setSunny(), 4000);
+            console.log('开始动画测试循环');
+        }
+
+        function checkStatus() {
+            const background = document.getElementById('weather-background');
+            const sun = document.getElementById('sun-animation');
+            const rain = document.getElementById('rain-animation');
+            const clouds = document.getElementById('clouds-animation');
+            
+            console.log('=== 背景动画状态检查 ===');
+            console.log('背景容器:', background);
+            console.log('太阳动画:', sun);
+            console.log('雨滴动画:', rain);
+            console.log('云朵动画:', clouds);
+            console.log('当前天气类:', background.className);
+            console.log('太阳显示状态:', sun.classList.contains('show'));
+            console.log('雨滴显示状态:', rain.classList.contains('show'));
+            console.log('云朵显示状态:', clouds.classList.contains('show'));
+            console.log('========================');
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('背景动画测试页面加载完成');
+            console.log('当前主题:', document.documentElement.getAttribute('data-theme'));
+            console.log('背景动画已初始化');
+        });
+    </script>
+
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="frontend/style.css" />
+</body>
+</html>
